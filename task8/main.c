@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 			return 4;
 		}
 	}
-	printf("Number of changed strings: %d\n", res);
+	printf("Number of changed symbols: %d\n", res);
 
 	return 0;
 }

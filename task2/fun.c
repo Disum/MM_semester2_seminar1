@@ -20,10 +20,6 @@ int strcmp_whsp(const char *str1, const char *str2, const int *whsp)
 		{
 			c1++;
 		}
-		while( *c2!='\0' && whsp[(int)( (unsigned char)*c2 )] )
-		{
-			c2++;
-		}
 
 		if( *c1!=*c2 )
 			return 1;
@@ -47,8 +43,8 @@ int strcmp_whsp(const char *str1, const char *str2, const int *whsp)
 int fun(const char *name_in, const char *name_out, const char *s, const char *t)
 {
 	FILE *in, *out;
-	int i, count = 0, *whsp;
-	char *buff, *c;
+	int i, count = 0, *whsp, s_sz;
+	char *buff, *c, *s_no_whsp;
 
 	if( !(in = fopen(name_in, "r")) )
 		return -1;
@@ -64,8 +60,19 @@ int fun(const char *name_in, const char *name_out, const char *s, const char *t)
 		fclose(out);
 		return -3;
 	}
+
+	for( s_sz = 0; s[s_sz]!='\0' && s[s_sz]!='\n'; s_sz++ ) { }
+	if( !(s_no_whsp = (char *)malloc(s_sz)) )
+	{
+		free(buff);
+		fclose(in);
+		fclose(out);
+		return -3;
+	}
+
 	if( !(whsp = (int *)malloc(CHAR_SZ*sizeof(int))) )
 	{
+		free(s_no_whsp);
 		free(buff);
 		fclose(in);
 		fclose(out);
@@ -78,7 +85,15 @@ int fun(const char *name_in, const char *name_out, const char *s, const char *t)
 		whsp[(int)( (unsigned char)*c )] = 1;
 	}
 
-	for( c = (char *)s; *c!='\0' && *c!='\n'; c++ ) { }
+	c = s_no_whsp;
+	for( i = 0; i<s_sz; i++ )
+	{
+		if( whsp[(int)( (unsigned char)s[i] )] )
+			continue;
+
+		*c = s[i];
+		c++;
+	}
 	*c = '\0';
 
 	while( fgets(buff, MAX_LEN, in) )
@@ -86,7 +101,7 @@ int fun(const char *name_in, const char *name_out, const char *s, const char *t)
 		for( c = buff; *c!='\0' && *c!='\n'; c++ ) { }
 		*c = '\0';
 
-		if( strcmp_whsp(buff, s, whsp) )
+		if( strcmp_whsp(buff, s_no_whsp, whsp) )
 		{
 			count++;
 			fprintf(out, "%s\n", buff);
@@ -94,6 +109,7 @@ int fun(const char *name_in, const char *name_out, const char *s, const char *t)
 	}
 
 	free(whsp);
+	free(s_no_whsp);
 	free(buff);
 	fclose(in);
 	fclose(out);
