@@ -18,7 +18,7 @@
 int fun(const char *name_in, const char *name_out, const char *s, const char *r)
 {
 	FILE *in, *out;
-	int count = 0, i, *check;
+	int count = 0, i;
 	char *buff, *c, *change;
 
 	if( !(in = fopen(name_in, "r")) )
@@ -42,36 +42,28 @@ int fun(const char *name_in, const char *name_out, const char *s, const char *r)
 		fclose(out);
 		return -3;
 	}
-	if( !(check = (int *)malloc(CHAR_SZ*sizeof(int))) )
-	{
-		free(change);
-		free(buff);
-		fclose(in);
-		fclose(out);
-		return -3;
-	}
 
 	for( i = 0; i<CHAR_SZ; i++ )
 	{
 		change[i] = (char)i;
-		check[i] = 0;
 	}
 	for( i = 0; s[i]!='\0' && s[i]!='\n' && r[i]!='\0' && r[i]!='\n'; i++ )
 	{
 		change[(int)( (unsigned char)s[i] )] = r[i];
-		check[(int)( (unsigned char)s[i] )] = 1;
 	}
 	for( ; s[i]!='\0' && s[i]!='\n'; i++ )
 	{
 		change[(int)( (unsigned char)s[i] )] = '\0';
-		check[(int)( (unsigned char)s[i] )] = 1;
 	}
 
 	while( fgets(buff, MAX_LEN, in) )
 	{
 		for( c = buff; *c!='\0' && *c!='\n'; c++ )
 		{
-			if( check[(int)( (unsigned char)*c )] )
+			if( change[(int)( (unsigned char)*c )]=='\0' )
+				break;
+
+			if( change[(int)( (unsigned char)*c )]!=*c )
 				count++;
 
 			fprintf(out, "%c", change[(int)( (unsigned char)*c )]);
@@ -79,7 +71,6 @@ int fun(const char *name_in, const char *name_out, const char *s, const char *r)
 		fprintf(out, "\n");
 	}
 
-	free(check);
 	free(change);
 	free(buff);
 	fclose(in);
